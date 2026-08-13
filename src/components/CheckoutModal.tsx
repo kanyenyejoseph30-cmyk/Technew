@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, ShieldCheck, Smartphone, CheckCircle, ArrowRight, Loader2, Info, Copy, Check } from 'lucide-react';
 import { CartItem, PaymentMethod, Order, EMoneyConfig } from '../types';
 import { generateQrCodeUrl, buildOrderQrPayload } from '../utils/qrHelper';
+import { formatCDF } from '../utils/currency';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -156,15 +157,25 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         className="bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-stone-200 relative animate-in zoom-in-95 my-6"
       >
         {/* Header */}
-        <div className="p-6 border-b border-stone-200 bg-stone-900 text-white flex items-center justify-between">
-          <div>
-            <div className="inline-flex items-center gap-1.5 text-xs text-amber-400 font-semibold uppercase tracking-wider mb-1">
-              <ShieldCheck className="w-4 h-4" />
-              Paiement Sécurisé Mobile eMoney
+        <div className="p-5 sm:p-6 border-b border-stone-200 bg-stone-900 text-white flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              id="back-to-shop-from-checkout"
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-400 text-xs font-bold border border-stone-700 transition flex items-center gap-1.5"
+            >
+              <span>← Retour</span>
+            </button>
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs text-amber-400 font-semibold uppercase tracking-wider mb-0.5">
+                <ShieldCheck className="w-4 h-4" />
+                Paiement Sécurisé Mobile eMoney
+              </div>
+              <h2 className="font-serif text-lg sm:text-xl font-bold text-stone-100">
+                Finaliser votre Commande Blanche Élégance
+              </h2>
             </div>
-            <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-100">
-              Finaliser votre Commande Blanche Élégance
-            </h2>
           </div>
           <button
             id="close-checkout-modal-btn"
@@ -188,7 +199,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
             <div className="text-right">
               <span className="text-[10px] text-stone-500 uppercase tracking-wider block">Total TTC</span>
-              <span className="font-serif text-2xl font-bold text-amber-800">${totalAmount}</span>
+              <span className="font-serif text-2xl font-bold text-stone-900 block">${totalAmount}</span>
+              <span className="text-xs font-bold text-amber-800 block">{formatCDF(totalAmount, emoneyConfig.exchangeRate)}</span>
             </div>
           </div>
 
@@ -370,7 +382,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <p className="font-semibold text-white">Instructions simples de transfert :</p>
                 <ol className="list-decimal list-inside space-y-1 text-stone-300 text-[11px]">
                   <li>Composez le code USSD de votre opérateur ou ouvrez votre application eMoney.</li>
-                  <li>Effectuez un transfert de <strong className="text-amber-300">${totalAmount}</strong> vers le numéro <strong className="text-amber-300">{emoneyConfig.merchantPhone}</strong> ({emoneyConfig.merchantName}).</li>
+                  <li>Effectuez un transfert de <strong className="text-amber-300">${totalAmount}</strong> (soit <strong className="text-amber-300">{formatCDF(totalAmount, emoneyConfig.exchangeRate)}</strong>) vers le numéro <strong className="text-amber-300">{emoneyConfig.merchantPhone}</strong> ({emoneyConfig.merchantName}).</li>
                   <li>Une fois le SMS de confirmation reçu, validez ci-dessous votre commande.</li>
                 </ol>
               </div>
@@ -428,7 +440,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               )}
             </button>
 
-            <p className="text-[11px] text-stone-500 text-center mt-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full mt-2 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-xl transition text-center"
+            >
+              ← Revenir au Panier / Annuler
+            </button>
+
+            <p className="text-[11px] text-stone-500 text-center mt-2">
               Un QR Code unique infalsifiable sera généré et associé à votre commande pour certifier la remise de votre colis.
             </p>
           </div>

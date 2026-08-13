@@ -1,15 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { Order } from '../types';
-import { User, Package, QrCode, Phone, Mail, MapPin, Download, ArrowRight, ShieldCheck, FileText, Lock, KeyRound, LogOut, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { 
+  User, 
+  Package, 
+  QrCode, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  Download, 
+  ArrowRight, 
+  ArrowLeft,
+  ShieldCheck, 
+  FileText, 
+  Lock, 
+  KeyRound, 
+  LogOut, 
+  CheckCircle2, 
+  AlertCircle, 
+  Sparkles,
+  ShoppingBag,
+  Compass,
+  Search,
+  Store
+} from 'lucide-react';
+import { formatCDF } from '../utils/currency';
 
 interface ClientSpaceProps {
   orders: Order[];
+  exchangeRate?: number;
+  onGoToShop?: () => void;
+  onGoToTracking?: () => void;
   onSelectOrderToTrack: (trackingNumber: string) => void;
   onOpenReceipt: (order: Order) => void;
 }
 
 export const ClientSpace: React.FC<ClientSpaceProps> = ({
   orders,
+  exchangeRate = 2850,
+  onGoToShop,
+  onGoToTracking,
   onSelectOrderToTrack,
   onOpenReceipt
 }) => {
@@ -31,6 +60,9 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
   const [isOtpSent, setIsOtpSent] = useState<boolean>(false);
   const [simulatedOtp, setSimulatedOtp] = useState<string>('');
   const [authError, setAuthError] = useState<string | null>(null);
+
+  // Search inside client space
+  const [searchTrackingInput, setSearchTrackingInput] = useState<string>('');
 
   // Sync to storage
   const handleLoginSuccess = (phone: string, name?: string) => {
@@ -85,6 +117,13 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
     handleLoginSuccess(phone, name);
   };
 
+  const handleDirectSearchTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchTrackingInput.trim();
+    if (!query) return;
+    onSelectOrderToTrack(query);
+  };
+
   // Filter orders for active authenticated client
   const clientOrders = orders.filter(o => 
     !clientPhone || o.customerPhone.replace(/[\s\-\+]/g, '').includes(clientPhone.replace(/[\s\-\+]/g, '')) || 
@@ -98,7 +137,32 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
   // If NOT authenticated, show the dedicated Client Authentication screen
   if (!isAuthenticated) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-12 sm:py-16">
+      <div className="max-w-xl mx-auto px-4 py-8 sm:py-12 space-y-4">
+        
+        {/* Navigation / Back Bar */}
+        <div className="flex items-center justify-between">
+          <button
+            id="btn-back-to-shop-from-client-auth"
+            onClick={onGoToShop}
+            type="button"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4 text-amber-700" />
+            <span>Retour à la Boutique</span>
+          </button>
+
+          {onGoToTracking && (
+            <button
+              onClick={onGoToTracking}
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-semibold text-stone-700 transition"
+            >
+              <Package className="w-3.5 h-3.5 text-stone-600" />
+              <span>Suivi de Commande</span>
+            </button>
+          )}
+        </div>
+
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-stone-200 shadow-2xl space-y-6">
           <div className="text-center space-y-2">
             <div className="w-16 h-16 bg-amber-500/10 text-amber-600 rounded-2xl flex items-center justify-center mx-auto border border-amber-500/20">
@@ -243,8 +307,49 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in">
       
+      {/* Top Navigation & Back Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-stone-200 shadow-xs">
+        <div className="flex items-center gap-2">
+          <button
+            id="btn-back-to-shop-client-header"
+            onClick={onGoToShop}
+            type="button"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-black text-white text-xs font-bold shadow-md transition active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4 text-amber-400" />
+            <span>← Retour à la Boutique</span>
+          </button>
+
+          {onGoToTracking && (
+            <button
+              id="btn-goto-tracking-client-header"
+              onClick={onGoToTracking}
+              type="button"
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-bold transition active:scale-95"
+            >
+              <Package className="w-4 h-4 text-amber-700" />
+              <span>Suivi de Commande</span>
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-stone-500 hidden sm:inline">
+            Connecté : <strong className="text-stone-800">{clientPhone}</strong>
+          </span>
+          <button
+            onClick={handleLogout}
+            id="btn-client-logout"
+            className="px-3.5 py-2 bg-stone-100 hover:bg-rose-50 text-stone-600 hover:text-rose-700 border border-stone-200 hover:border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition active:scale-95"
+          >
+            <LogOut className="w-3.5 h-3.5 text-rose-500" />
+            <span>Déconnexion</span>
+          </button>
+        </div>
+      </div>
+
       {/* Client Profile Header */}
       <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-stone-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
@@ -255,7 +360,7 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
             <div className="flex items-center gap-2">
               <h1 className="font-serif text-xl sm:text-2xl font-bold text-stone-100">{activeClientName}</h1>
               <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] uppercase font-bold tracking-wider rounded-full border border-emerald-400/30">
-                Compte Authentifié
+                Compte Client Actif
               </span>
             </div>
             <div className="flex flex-wrap gap-4 text-xs text-stone-300 mt-1">
@@ -266,35 +371,137 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
           </div>
         </div>
 
-        {/* Account controls */}
+        {/* Quick stats badge */}
         <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="px-4 py-2 bg-stone-800/90 rounded-2xl border border-stone-700 text-right">
+            <span className="text-[10px] text-stone-400 uppercase tracking-wider block">Commandes enregistrées</span>
+            <span className="font-serif text-xl font-bold text-amber-400">{clientOrders.length}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* QUICK ACCESS CARDS: BOUTIQUE & SUIVI DE COMMANDE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        
+        {/* Card 1: Boutique Haute Couture */}
+        <div className="bg-linear-to-br from-amber-900/90 via-stone-900 to-stone-950 text-white rounded-3xl p-6 sm:p-7 shadow-lg border border-amber-800/40 relative overflow-hidden flex flex-col justify-between space-y-4">
+          <div className="space-y-2 relative z-10">
+            <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center border border-amber-300/30">
+              <Store className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif text-xl font-bold text-white">
+              Boutique Blanche Élégance
+            </h3>
+            <p className="text-xs text-stone-300 leading-relaxed">
+              Explorez nos collections exclusives de haute couture, robes de soirée, costumes sur-mesure et accessoires de luxe.
+            </p>
+          </div>
           <button
-            onClick={handleLogout}
-            id="btn-client-logout"
-            className="px-4 py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white border border-stone-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition active:scale-95"
+            id="btn-client-access-shop"
+            onClick={onGoToShop}
+            type="button"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm rounded-xl shadow-lg transition active:scale-95 self-start"
           >
-            <LogOut className="w-3.5 h-3.5 text-rose-400" />
-            <span>Déconnexion</span>
+            <ShoppingBag className="w-4 h-4" />
+            <span>Accéder à la Boutique & Commander</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
+
+        {/* Card 2: Suivi de Commande en Temps Réel */}
+        <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-lg border border-stone-200 flex flex-col justify-between space-y-4">
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center border border-emerald-200">
+              <Compass className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif text-xl font-bold text-stone-900">
+              Suivi de Commande & Colis en Direct
+            </h3>
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Consultez l’état d’avancement de vos livraisons, la localisation du livreur express et l’historique des étapes.
+            </p>
+          </div>
+
+          {/* Quick Tracking Search Form */}
+          <form onSubmit={handleDirectSearchTrack} className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
+              <input
+                type="text"
+                value={searchTrackingInput}
+                onChange={(e) => setSearchTrackingInput(e.target.value)}
+                placeholder="Ex: BE-2026-..."
+                className="w-full pl-9 pr-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-mono text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2.5 bg-stone-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-md transition active:scale-95 flex items-center gap-1"
+            >
+              <span>Suivre</span>
+              <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+            </button>
+          </form>
+
+          {onGoToTracking && (
+            <button
+              id="btn-client-access-tracking"
+              onClick={onGoToTracking}
+              type="button"
+              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 transition self-start"
+            >
+              <span>Ouvrir la page complète de suivi →</span>
+            </button>
+          )}
+        </div>
+
       </div>
 
       {/* Orders Grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-serif text-xl font-bold text-stone-900">Vos Commandes & Colis ({clientOrders.length})</h2>
             <p className="text-xs text-stone-500">QR Code unique et reçu fiscal pour chaque commande associée au numéro {clientPhone}</p>
           </div>
+
+          {onGoToShop && (
+            <button
+              onClick={onGoToShop}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold transition"
+            >
+              <Store className="w-3.5 h-3.5 text-amber-700" />
+              <span>Commander d'autres articles</span>
+            </button>
+          )}
         </div>
 
         {clientOrders.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-stone-200 shadow-sm space-y-3">
-            <Package className="w-12 h-12 text-stone-400 mx-auto" />
-            <h3 className="font-serif text-base font-bold text-stone-800">Aucune commande pour ce numéro ({clientPhone})</h3>
-            <p className="text-xs text-stone-500">
-              Passez votre première commande sur notre catalogue avec ce numéro pour bénéficier du suivi en direct.
-            </p>
+          <div className="bg-white rounded-3xl p-12 text-center border border-stone-200 shadow-sm space-y-4">
+            <Package className="w-14 h-14 text-stone-400 mx-auto" />
+            <div>
+              <h3 className="font-serif text-lg font-bold text-stone-800">Aucune commande pour ce numéro ({clientPhone})</h3>
+              <p className="text-xs text-stone-500 max-w-sm mx-auto mt-1">
+                Passez votre première commande sur notre catalogue avec ce numéro pour bénéficier du suivi en direct et du certificat d'authenticité.
+              </p>
+            </div>
+            <div className="pt-2 flex flex-wrap justify-center gap-3">
+              <button
+                onClick={onGoToShop}
+                className="px-5 py-3 bg-stone-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2 transition active:scale-95"
+              >
+                <ShoppingBag className="w-4 h-4 text-amber-400" />
+                <span>Découvrir la Boutique</span>
+              </button>
+              {onGoToTracking && (
+                <button
+                  onClick={onGoToTracking}
+                  className="px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs rounded-xl transition"
+                >
+                  Suivre une commande avec un numéro de suivi
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -320,9 +527,12 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
 
                 {/* Items Summary */}
                 <div className="space-y-2">
-                  <div className="text-xs text-stone-500 flex justify-between">
+                  <div className="text-xs text-stone-500 flex justify-between items-baseline">
                     <span>Date: {new Date(order.createdAt).toLocaleDateString('fr-FR')}</span>
-                    <span className="font-bold text-stone-900">${order.totalAmount}</span>
+                    <div className="text-right">
+                      <span className="font-bold text-stone-900 mr-1.5">${order.totalAmount}</span>
+                      <span className="text-[11px] text-amber-700 font-semibold">({formatCDF(order.totalAmount, exchangeRate)})</span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 overflow-x-auto py-1">
                     {order.items.map((item, idx) => (
@@ -354,7 +564,7 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <button
                     onClick={() => onSelectOrderToTrack(order.trackingNumber)}
-                    className="px-3 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition active:scale-95"
+                    className="px-3 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition active:scale-95 shadow-xs"
                   >
                     <span>Suivre le Colis</span>
                     <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
@@ -373,7 +583,20 @@ export const ClientSpace: React.FC<ClientSpaceProps> = ({
           </div>
         )}
       </div>
+
+      {/* Bottom Back to Shop Bar */}
+      <div className="pt-4 border-t border-stone-200 flex justify-center">
+        <button
+          onClick={onGoToShop}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-stone-900 hover:bg-black text-white text-xs sm:text-sm font-bold shadow-lg transition active:scale-95"
+        >
+          <ArrowLeft className="w-4 h-4 text-amber-400" />
+          <span>Retourner faire du shopping dans la Boutique</span>
+        </button>
+      </div>
+
     </div>
   );
 };
+
 

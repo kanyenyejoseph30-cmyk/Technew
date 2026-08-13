@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { X, ShoppingBag, Check, ShieldCheck, Truck, RefreshCw, AlertCircle } from 'lucide-react';
 import { Product } from '../types';
+import { formatCDF } from '../utils/currency';
 
 interface ProductDetailModalProps {
   product: Product | null;
+  exchangeRate?: number;
   onClose: () => void;
   onAddToCart: (product: Product, quantity: number, size: string, color: string) => void;
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
+  exchangeRate = 2850,
   onClose,
   onAddToCart
 }) => {
@@ -50,6 +53,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         id="product-detail-modal"
         className="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl border border-stone-200 relative animate-in zoom-in-95"
       >
+        {/* Top Header with Back / Close Button */}
+        <div className="absolute top-4 left-4 z-10">
+          <button
+            id="back-product-detail-btn"
+            onClick={onClose}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-stone-800 text-xs font-bold shadow-md border border-stone-200 transition"
+          >
+            <span>← Retour</span>
+          </button>
+        </div>
+
         {/* Close Button */}
         <button
           id="close-product-detail-btn"
@@ -114,18 +128,23 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {product.name}
               </h2>
 
-              <div className="flex items-baseline gap-3">
-                <span className="font-serif text-3xl font-bold text-stone-900">
-                  ${product.price}
-                </span>
-                {product.compareAtPrice && product.compareAtPrice > product.price && (
-                  <span className="text-base text-stone-400 line-through">
-                    ${product.compareAtPrice}
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <span className="font-serif text-3xl font-bold text-stone-900">
+                    ${product.price}
                   </span>
-                )}
-                <span className="text-xs text-stone-500 font-medium">
-                  (Paiement Mobile eMoney accepté)
-                </span>
+                  <span className="font-serif text-2xl font-bold text-amber-700">
+                    {formatCDF(product.price, exchangeRate)}
+                  </span>
+                  {product.compareAtPrice && product.compareAtPrice > product.price && (
+                    <span className="text-sm text-stone-400 line-through">
+                      ${product.compareAtPrice} ({formatCDF(product.compareAtPrice, exchangeRate)})
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-stone-500 font-medium">
+                  Taux officiel de conversion : 1 $ = {exchangeRate.toLocaleString('fr-FR')} FC • Paiements M-Pesa, Orange & Airtel acceptés
+                </p>
               </div>
 
               <p className="text-stone-600 text-sm leading-relaxed border-t border-b border-stone-100 py-3">
@@ -239,7 +258,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 )}
               </button>
 
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-stone-500 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-2xl transition"
+              >
+                ← Continuer mes achats (Fermer)
+              </button>
+
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-stone-500 pt-1">
                 <div className="flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
                   <span>QR Code de retrait certifié</span>

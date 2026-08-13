@@ -224,6 +224,7 @@ export default function App() {
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
         cartCount={totalCartCount}
+        exchangeRate={emoneyConfig.exchangeRate}
         onOpenCart={() => setIsCartOpen(true)}
         notifications={notifications}
         onMarkNotificationRead={handleMarkNotificationRead}
@@ -251,6 +252,7 @@ export default function App() {
               products={products}
               selectedCategory={selectedCategory}
               searchQuery={searchQuery}
+              exchangeRate={emoneyConfig.exchangeRate}
               onOpenDetail={(prod) => setDetailProduct(prod)}
               onQuickAdd={handleQuickAdd}
             />
@@ -262,6 +264,9 @@ export default function App() {
           <OrderTrackingView
             orders={orders}
             selectedTrackingNumber={selectedTrackingNumber}
+            exchangeRate={emoneyConfig.exchangeRate}
+            onGoToShop={() => setCurrentTab('catalogue')}
+            onGoToClientSpace={() => setCurrentTab('client')}
             onUpdateOrderStatus={handleUpdateOrderStatus}
             onOpenReceipt={(ord) => setReceiptOrder(ord)}
           />
@@ -271,6 +276,9 @@ export default function App() {
         {currentTab === 'client' && (
           <ClientSpace
             orders={orders}
+            exchangeRate={emoneyConfig.exchangeRate}
+            onGoToShop={() => setCurrentTab('catalogue')}
+            onGoToTracking={() => setCurrentTab('suivi')}
             onSelectOrderToTrack={(trackNo) => {
               setSelectedTrackingNumber(trackNo);
               setCurrentTab('suivi');
@@ -283,6 +291,8 @@ export default function App() {
         {currentTab === 'livreur' && (
           <DeliveryDriverSpace
             orders={orders}
+            exchangeRate={emoneyConfig.exchangeRate}
+            onGoToShop={() => setCurrentTab('catalogue')}
             onOpenScanner={() => setIsScannerOpen(true)}
             onUpdateOrderStatus={handleUpdateOrderStatus}
           />
@@ -295,6 +305,7 @@ export default function App() {
             orders={orders}
             emoneyConfig={emoneyConfig}
             analytics={analytics}
+            onGoToShop={() => setCurrentTab('catalogue')}
             onSaveProducts={(prods) => {
               setProducts(prods);
               saveStoredProducts(prods);
@@ -438,6 +449,7 @@ export default function App() {
         <ProductDetailModal
           key={detailProduct.id}
           product={detailProduct}
+          exchangeRate={emoneyConfig.exchangeRate}
           onClose={() => setDetailProduct(null)}
           onAddToCart={handleAddToCart}
         />
@@ -449,6 +461,7 @@ export default function App() {
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
           items={cartItems}
+          exchangeRate={emoneyConfig.exchangeRate}
           onUpdateQuantity={handleUpdateCartQuantity}
           onRemoveItem={handleRemoveCartItem}
           onClearCart={handleClearCart}
@@ -482,6 +495,7 @@ export default function App() {
         <ReceiptModal
           key={receiptOrder.id}
           order={receiptOrder}
+          exchangeRate={emoneyConfig.exchangeRate}
           onClose={() => setReceiptOrder(null)}
         />
       )}

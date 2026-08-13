@@ -1,15 +1,18 @@
 import React from 'react';
 import { ShoppingBag, Eye, Check, AlertCircle } from 'lucide-react';
 import { Product } from '../types';
+import { formatCDF } from '../utils/currency';
 
 interface ProductCardProps {
   product: Product;
+  exchangeRate?: number;
   onOpenDetail: (product: Product) => void;
   onQuickAdd: (product: Product) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,
+  exchangeRate = 2850,
   onOpenDetail,
   onQuickAdd
 }) => {
@@ -107,6 +110,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   ${product.compareAtPrice}
                 </span>
               )}
+            </div>
+            <div className="text-[11px] font-bold text-amber-700">
+              {formatCDF(product.price, exchangeRate)}
             </div>
             <div className="flex items-center gap-1 mt-1">
               <span className="text-[10px] text-stone-400">Tailles:</span>

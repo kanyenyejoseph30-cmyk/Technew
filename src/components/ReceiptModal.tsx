@@ -1,13 +1,15 @@
 import React from 'react';
 import { X, Printer, Download, ShieldCheck, QrCode } from 'lucide-react';
 import { Order } from '../types';
+import { formatCDF } from '../utils/currency';
 
 interface ReceiptModalProps {
   order: Order | null;
+  exchangeRate?: number;
   onClose: () => void;
 }
 
-export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, onClose }) => {
+export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, exchangeRate = 2850, onClose }) => {
   if (!order) return null;
 
   const handlePrint = () => {
@@ -23,13 +25,19 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, onClose }) =>
         {/* Controls header (hidden on print) */}
         <div className="p-4 bg-stone-900 text-white flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-amber-400 rounded-lg text-xs font-bold flex items-center gap-1 transition"
+            >
+              <span>← Retour</span>
+            </button>
             <ShieldCheck className="w-5 h-5 text-amber-400" />
-            <span className="font-semibold text-sm">Facture & Reçu Officiel Blanche Élégance</span>
+            <span className="font-semibold text-xs sm:text-sm">Facture & Reçu Officiel Blanche Élégance</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Imprimer</span>
@@ -37,6 +45,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, onClose }) =>
             <button
               onClick={onClose}
               className="p-1.5 text-stone-400 hover:text-white rounded-full hover:bg-stone-800"
+              aria-label="Fermer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -105,8 +114,14 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, onClose }) =>
                     <td className="py-3 font-semibold text-stone-900">{it.product.name}</td>
                     <td className="py-3 text-stone-600">{it.selectedSize} ({it.selectedColor})</td>
                     <td className="py-3 text-center font-bold">{it.quantity}</td>
-                    <td className="py-3 text-right font-serif">${it.product.price}</td>
-                    <td className="py-3 text-right font-serif font-bold">${it.product.price * it.quantity}</td>
+                    <td className="py-3 text-right font-serif">
+                      <div>${it.product.price}</div>
+                      <div className="text-[10px] text-stone-500 font-sans">{formatCDF(it.product.price, exchangeRate)}</div>
+                    </td>
+                    <td className="py-3 text-right font-serif font-bold">
+                      <div>${it.product.price * it.quantity}</div>
+                      <div className="text-[10px] text-amber-700 font-sans">{formatCDF(it.product.price * it.quantity, exchangeRate)}</div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -122,6 +137,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, onClose }) =>
               <div className="text-[10px] text-stone-500 max-w-xs">
                 <span className="font-bold text-stone-800 block">Certificat d'Authenticité Numérique</span>
                 Ce document certifie la transaction eMoney et autorise le retrait du colis.
+                <span className="block mt-1 font-mono text-[9px] text-stone-400">Taux appliqué : 1 $ = {exchangeRate.toLocaleString('fr-FR')} FC</span>
               </div>
             </div>
 
@@ -132,10 +148,21 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, onClose }) =>
               </div>
               <div className="text-sm">
                 <span className="font-bold text-stone-900">Total TTC : </span>
-                <span className="font-serif text-2xl font-bold text-amber-800">${order.totalAmount}</span>
+                <span className="font-serif text-2xl font-bold text-stone-900 mr-2">${order.totalAmount}</span>
+                <div className="font-serif text-lg font-bold text-amber-800">{formatCDF(order.totalAmount, exchangeRate)}</div>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Bottom footer button (hidden on print) */}
+        <div className="p-4 bg-stone-50 border-t border-stone-200 flex justify-end gap-2 print:hidden">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition shadow-xs"
+          >
+            ← Retourner
+          </button>
         </div>
 
       </div>

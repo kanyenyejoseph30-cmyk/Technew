@@ -141,7 +141,8 @@ export const INITIAL_EMONEY_CONFIG: EMoneyConfig = {
   merchantName: 'BLANCHE ELEGANCE SARL',
   mpesaActive: true,
   orangeActive: true,
-  airtelActive: true
+  airtelActive: true,
+  exchangeRate: 2850
 };
 
 export const INITIAL_ANALYTICS: DeliveryRouteAnalytic[] = [

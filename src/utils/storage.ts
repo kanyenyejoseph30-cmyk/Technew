@@ -69,7 +69,14 @@ export function saveStoredOrders(orders: Order[]): void {
 export function getStoredEMoneyConfig(): EMoneyConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.EMONEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        ...INITIAL_EMONEY_CONFIG,
+        ...parsed,
+        exchangeRate: typeof parsed.exchangeRate === 'number' && parsed.exchangeRate > 0 ? parsed.exchangeRate : 2850
+      };
+    }
   } catch (e) {
     console.warn('Storage read error', e);
   }

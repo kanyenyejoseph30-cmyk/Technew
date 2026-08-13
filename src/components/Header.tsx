@@ -10,6 +10,7 @@ interface HeaderProps {
   notifications: NotificationItem[];
   onMarkNotificationRead: (id: string) => void;
   onSelectOrderForTracking?: (trackingNumber: string) => void;
+  exchangeRate?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,7 +20,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCart,
   notifications,
   onMarkNotificationRead,
-  onSelectOrderForTracking
+  onSelectOrderForTracking,
+  exchangeRate = 2850
 }) => {
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [showNotifMenu, setShowNotifMenu] = useState<boolean>(false);
@@ -63,6 +65,10 @@ export const Header: React.FC<HeaderProps> = ({
           <span>Maison Haute Couture <strong>Blanche Élégance</strong> — Paiements eMoney Sécurisés (M-Pesa, Orange, Airtel)</span>
         </div>
         <div className="hidden sm:flex items-center gap-4 text-[11px] text-stone-400">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-stone-800 text-amber-300 rounded-md border border-stone-700 font-mono text-[11px]">
+            <span className="text-[10px] uppercase font-bold text-stone-400">Taux :</span>
+            <span>1 $ = {exchangeRate.toLocaleString('fr-FR')} FC</span>
+          </div>
           <span className="flex items-center gap-1">
             {isOnline ? (
               <span className="inline-flex items-center text-emerald-400">

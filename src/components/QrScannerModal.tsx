@@ -122,14 +122,20 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-stone-200 relative animate-in zoom-in-95"
       >
         {/* Header */}
-        <div className="p-5 bg-stone-900 text-white flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="p-4 sm:p-5 bg-stone-900 text-white flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={onClose}
+              className="px-2.5 py-1 bg-stone-800 hover:bg-stone-700 text-amber-400 rounded-lg text-xs font-bold flex items-center gap-1 transition"
+            >
+              <span>← Retour</span>
+            </button>
             <div className="w-8 h-8 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center">
               <QrCode className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-bold">Scanner de Colis Blanche Élégance</h2>
-              <p className="text-[11px] text-stone-400">Authentification sécurisée par QR Code</p>
+              <h2 className="font-serif text-base sm:text-lg font-bold">Scanner de Colis Blanche Élégance</h2>
+              <p className="text-[10px] sm:text-[11px] text-stone-400">Authentification sécurisée par QR Code</p>
             </div>
           </div>
           <button
@@ -382,6 +388,17 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               </button>
             </div>
           )}
+
+          {/* Bottom Close Button */}
+          <div className="pt-2 flex justify-center">
+            <button
+              onClick={onClose}
+              type="button"
+              className="text-xs text-stone-500 hover:text-stone-800 font-semibold transition"
+            >
+              ← Fermer le scanner et retourner
+            </button>
+          </div>
 
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Lock, 
@@ -18,15 +18,20 @@ import {
   AlertCircle, 
   Sparkles,
   MapPin,
-  RefreshCw
+  RefreshCw,
+  Coins,
+  ArrowLeft,
+  Store
 } from 'lucide-react';
 import { Product, Order, EMoneyConfig, DeliveryRouteAnalytic, ProductCategory } from '../types';
+import { formatCDF } from '../utils/currency';
 
 interface AdminManagerSpaceProps {
   products: Product[];
   orders: Order[];
   emoneyConfig: EMoneyConfig;
   analytics: DeliveryRouteAnalytic[];
+  onGoToShop?: () => void;
   onSaveProducts: (products: Product[]) => void;
   onSaveOrders: (orders: Order[]) => void;
   onSaveEMoneyConfig: (config: EMoneyConfig) => void;
@@ -48,6 +53,7 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
   orders,
   emoneyConfig,
   analytics,
+  onGoToShop,
   onSaveProducts,
   onSaveOrders,
   onSaveEMoneyConfig,
@@ -73,7 +79,14 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
   // eMoney Config Edit State
   const [tempMerchantPhone, setTempMerchantPhone] = useState<string>(emoneyConfig.merchantPhone);
   const [tempMerchantName, setTempMerchantName] = useState<string>(emoneyConfig.merchantName);
+  const [tempExchangeRate, setTempExchangeRate] = useState<number>(emoneyConfig.exchangeRate || 2850);
   const [configSavedToast, setConfigSavedToast] = useState<boolean>(false);
+
+  useEffect(() => {
+    setTempMerchantPhone(emoneyConfig.merchantPhone);
+    setTempMerchantName(emoneyConfig.merchantName);
+    setTempExchangeRate(emoneyConfig.exchangeRate || 2850);
+  }, [emoneyConfig]);
 
   // AUTHENTICATION LOGIC (Restricted strictly to 0991018186)
   const AUTHORIZED_PHONE = '0991018186';
@@ -184,10 +197,12 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
   // EMONEY CONFIG SAVE
   const handleSaveEMoney = (e: React.FormEvent) => {
     e.preventDefault();
+    const rateVal = Number(tempExchangeRate);
     const updated: EMoneyConfig = {
       ...emoneyConfig,
       merchantPhone: tempMerchantPhone.trim() || '0991018186',
-      merchantName: tempMerchantName.trim() || 'BLANCHE ELEGANCE SARL'
+      merchantName: tempMerchantName.trim() || 'BLANCHE ELEGANCE SARL',
+      exchangeRate: !isNaN(rateVal) && rateVal > 0 ? rateVal : 2850
     };
     onSaveEMoneyConfig(updated);
     setConfigSavedToast(true);
@@ -202,7 +217,21 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
   // LOGIN SCREEN
   if (!isAuthenticated) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16">
+      <div className="max-w-md mx-auto px-4 py-12 space-y-4">
+        {onGoToShop && (
+          <div className="flex items-center justify-start">
+            <button
+              id="btn-back-to-shop-from-admin-auth"
+              onClick={onGoToShop}
+              type="button"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-xs font-bold text-stone-700 shadow-xs transition active:scale-95"
+            >
+              <ArrowLeft className="w-4 h-4 text-amber-700" />
+              <span>Retour à la Boutique</span>
+            </button>
+          </div>
+        )}
+
         <div className="bg-white rounded-3xl p-8 border border-stone-200 shadow-2xl space-y-6 text-center">
           
           <div className="w-16 h-16 rounded-2xl bg-stone-900 text-amber-400 flex items-center justify-center mx-auto shadow-lg">
@@ -303,8 +332,38 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
 
   // MAIN ADMIN DASHBOARD
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in">
       
+      {/* Top Back Navigation Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-stone-200 shadow-xs">
+        <div className="flex items-center gap-2">
+          {onGoToShop && (
+            <button
+              id="btn-back-to-shop-from-admin-header"
+              onClick={onGoToShop}
+              type="button"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-black text-white text-xs font-bold shadow-md transition active:scale-95"
+            >
+              <ArrowLeft className="w-4 h-4 text-amber-400" />
+              <span>← Retour à la Boutique</span>
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-stone-500 hidden sm:inline">
+            Compte Gérant Autorisé : <strong className="text-stone-800">{AUTHORIZED_PHONE}</strong>
+          </span>
+          <button
+            onClick={handleLogout}
+            id="btn-admin-top-logout"
+            className="py-2 px-3.5 bg-stone-100 hover:bg-rose-50 text-stone-700 hover:text-rose-700 text-xs font-semibold rounded-xl border border-stone-200 hover:border-rose-200 transition active:scale-95"
+          >
+            Déconnexion
+          </button>
+        </div>
+      </div>
+
       {/* Top Admin Header */}
       <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-stone-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
@@ -398,6 +457,9 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
                 <span className="font-serif text-3xl font-bold text-stone-900">${totalRevenue}</span>
                 <span className="text-xs font-semibold text-emerald-600">+18% ce mois</span>
               </div>
+              <div className="text-xs font-bold text-amber-700 mt-0.5 font-mono">
+                {formatCDF(totalRevenue, emoneyConfig.exchangeRate)}
+              </div>
               <p className="text-[11px] text-stone-500 mt-1">M-Pesa, Orange & Airtel cumulés</p>
             </div>
 
@@ -424,6 +486,9 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="font-serif text-3xl font-bold text-emerald-700">${averageBasket}</span>
                 <span className="text-xs font-semibold text-stone-500">/ commande</span>
+              </div>
+              <div className="text-xs font-bold text-amber-700 mt-0.5 font-mono">
+                {formatCDF(Number(averageBasket), emoneyConfig.exchangeRate)}
               </div>
               <p className="text-[11px] text-stone-500 mt-1">Élégance haut de gamme</p>
             </div>
@@ -459,7 +524,10 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
                         <span className="text-[10px] text-emerald-600 block font-normal">Payé</span>
                       </td>
                       <td className="py-3 text-stone-600">{ord.items.length} article(s)</td>
-                      <td className="py-3 font-serif font-bold text-stone-900">${ord.totalAmount}</td>
+                      <td className="py-3">
+                        <div className="font-serif font-bold text-stone-900">${ord.totalAmount}</div>
+                        <div className="text-[10px] font-bold text-amber-700 font-mono">{formatCDF(ord.totalAmount, emoneyConfig.exchangeRate)}</div>
+                      </td>
                       <td className="py-3">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                           ord.status === 'livree' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
@@ -690,7 +758,10 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
                       </div>
                     </td>
                     <td className="p-4 font-medium text-stone-700">{p.category}</td>
-                    <td className="p-4 font-serif font-bold text-sm text-stone-900">${p.price}</td>
+                    <td className="p-4">
+                      <div className="font-serif font-bold text-sm text-stone-900">${p.price}</div>
+                      <div className="text-[10px] font-bold text-amber-700 font-mono">{formatCDF(p.price, emoneyConfig.exchangeRate)}</div>
+                    </td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                         p.stock <= 0 ? 'bg-red-100 text-red-700' : p.stock <= 5 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
@@ -741,8 +812,11 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <strong className="font-mono text-base text-stone-900">#{ord.trackingNumber}</strong>
-                      <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+                      <span className="text-xs font-bold text-stone-900 bg-stone-100 px-2 py-0.5 rounded">
                         ${ord.totalAmount}
+                      </span>
+                      <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-mono">
+                        {formatCDF(ord.totalAmount, emoneyConfig.exchangeRate)}
                       </span>
                     </div>
                     <p className="text-xs text-stone-600 mt-0.5">
@@ -818,61 +892,168 @@ export const AdminManagerSpace: React.FC<AdminManagerSpaceProps> = ({
         </div>
       )}
 
-      {/* SUB-TAB 5: PARAMÈTRES EMONEY & NUMÉRO MARCHAND */}
+      {/* SUB-TAB 5: PARAMÈTRES EMONEY & TAUX DE CHANGE */}
       {adminTab === 'settings' && (
-        <div className="max-w-2xl bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-xs space-y-6">
+        <div className="max-w-3xl bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-xs space-y-8">
           <div>
-            <h2 className="font-serif text-xl font-bold text-stone-900">Paramètres des Transactions Mobile eMoney</h2>
-            <p className="text-xs text-stone-500">
-              Modifiez le numéro de téléphone officiel affiché aux clients pour les paiements M-Pesa, Orange Money et Airtel Money.
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-semibold uppercase tracking-wider mb-2">
+              <Coins className="w-3.5 h-3.5 text-amber-700" />
+              Configuration Devises & Marchand
+            </div>
+            <h2 className="font-serif text-2xl font-bold text-stone-900">Paramètres des Paiements & Taux de Change</h2>
+            <p className="text-xs text-stone-500 mt-1">
+              Gérez le taux officiel de conversion en Franc Congolais (CDF / FC) et le numéro de téléphone marchand affiché aux clients pour les paiements M-Pesa, Orange Money et Airtel Money.
             </p>
           </div>
 
           {configSavedToast && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3 rounded-xl flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Numéro marchand et paramètres eMoney enregistrés avec succès !</span>
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-4 rounded-2xl flex items-center gap-3 animate-in fade-in">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <div>
+                <strong className="block font-bold">Modifications enregistrées !</strong>
+                <span>Le nouveau taux de change ({Number(tempExchangeRate).toLocaleString('fr-FR')} FC pour 1 $) et les coordonnées marchandes ont été propagés à toute l'application.</span>
+              </div>
             </div>
           )}
 
-          <form onSubmit={handleSaveEMoney} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">
-                Numéro Marchand Mobile eMoney (Défaut : 0991018186) *
-              </label>
-              <input
-                type="tel"
-                required
-                value={tempMerchantPhone}
-                onChange={(e) => setTempMerchantPhone(e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-300 rounded-xl text-base font-mono font-bold text-stone-900 focus:ring-2 focus:ring-amber-500"
-              />
-              <p className="text-[11px] text-stone-500 mt-1">
-                Ce numéro est automatiquement affiché lors du paiement par M-Pesa, Orange Money et Airtel Money.
-              </p>
+          <form onSubmit={handleSaveEMoney} className="space-y-6">
+            
+            {/* Section 1: Taux de Change Franc Congolais */}
+            <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Coins className="w-5 h-5 text-amber-700" />
+                  <h3 className="font-serif text-base font-bold text-stone-900">
+                    Taux de Change Franc Congolais (CDF / FC)
+                  </h3>
+                </div>
+                <span className="text-[11px] bg-amber-200/60 text-amber-900 font-bold px-2.5 py-1 rounded-full">
+                  1 USD = {Number(tempExchangeRate || 2850).toLocaleString('fr-FR')} FC
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+                  Valeur de 1 Dollar ($ USD) en Francs Congolais (FC / CDF) *
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    required
+                    min={500}
+                    max={10000}
+                    step={10}
+                    value={tempExchangeRate}
+                    onChange={(e) => setTempExchangeRate(Number(e.target.value))}
+                    placeholder="Ex: 2850"
+                    className="w-full px-4 py-3 pr-16 bg-white border border-stone-300 rounded-xl text-lg font-mono font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-500">
+                    FC / USD
+                  </div>
+                </div>
+                <p className="text-[11px] text-stone-500 mt-1.5">
+                  Tous les prix du catalogue, détails, panier, caisse eMoney et reçus afficheront instantanément le montant converti selon ce taux.
+                </p>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-semibold text-stone-600 block">Raccourcis Taux Rapides du Marché :</span>
+                <div className="flex flex-wrap gap-2">
+                  {[2800, 2850, 2900, 2950, 3000].map((rate) => (
+                    <button
+                      key={rate}
+                      type="button"
+                      onClick={() => setTempExchangeRate(rate)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition ${
+                        tempExchangeRate === rate
+                          ? 'bg-amber-700 text-white shadow-xs'
+                          : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
+                      }`}
+                    >
+                      {rate.toLocaleString('fr-FR')} FC
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Live Preview Conversion Simulation */}
+              <div className="bg-white p-3.5 rounded-xl border border-amber-100 grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="p-2 bg-stone-50 rounded-lg">
+                  <span className="text-[10px] text-stone-400 block">50 $ (Chemise)</span>
+                  <strong className="text-stone-900 font-bold">{formatCDF(50, tempExchangeRate)}</strong>
+                </div>
+                <div className="p-2 bg-stone-50 rounded-lg">
+                  <span className="text-[10px] text-stone-400 block">120 $ (Robe Soirée)</span>
+                  <strong className="text-amber-800 font-bold">{formatCDF(120, tempExchangeRate)}</strong>
+                </div>
+                <div className="p-2 bg-stone-50 rounded-lg">
+                  <span className="text-[10px] text-stone-400 block">250 $ (Costume)</span>
+                  <strong className="text-stone-900 font-bold">{formatCDF(250, tempExchangeRate)}</strong>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">
-                Nom du Titulaire / Raison Sociale *
-              </label>
-              <input
-                type="text"
-                required
-                value={tempMerchantName}
-                onChange={(e) => setTempMerchantName(e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500"
-              />
+            {/* Section 2: Numéro Marchand & Raison Sociale */}
+            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-5 space-y-4">
+              <h3 className="font-serif text-base font-bold text-stone-900 flex items-center gap-2">
+                <Smartphone className="w-5 h-5 text-stone-700" />
+                <span>Coordonnées de Réception Mobile eMoney</span>
+              </h3>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                  Numéro Marchand Mobile eMoney (Défaut : 0991018186) *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={tempMerchantPhone}
+                  onChange={(e) => setTempMerchantPhone(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-stone-300 rounded-xl text-base font-mono font-bold text-stone-900 focus:ring-2 focus:ring-amber-500"
+                />
+                <p className="text-[11px] text-stone-500 mt-1">
+                  Ce numéro est affiché lors du paiement par M-Pesa, Orange Money et Airtel Money pour tous les clients.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                  Nom du Titulaire / Raison Sociale *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={tempMerchantName}
+                  onChange={(e) => setTempMerchantName(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
             </div>
 
             <button
+              id="btn-save-manager-settings"
               type="submit"
-              className="w-full py-3.5 bg-stone-900 hover:bg-stone-800 text-white font-bold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2"
+              className="w-full py-4 bg-stone-900 hover:bg-stone-800 text-white font-bold text-sm sm:text-base rounded-2xl shadow-xl transition active:scale-98 flex items-center justify-center gap-2"
             >
               <Save className="w-4 h-4 text-amber-400" />
-              <span>Sauvegarder les Paramètres de Paiement</span>
+              <span>Enregistrer le Taux & les Paramètres de Paiement</span>
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Bottom Return to Boutique */}
+      {onGoToShop && (
+        <div className="pt-6 border-t border-stone-200 flex justify-center">
+          <button
+            onClick={onGoToShop}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-stone-900 hover:bg-black text-white text-xs sm:text-sm font-bold shadow-lg transition active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4 text-amber-400" />
+            <span>Retourner à la Boutique</span>
+          </button>
         </div>
       )}
 

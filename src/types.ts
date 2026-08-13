@@ -81,6 +81,7 @@ export interface EMoneyConfig {
   mpesaActive: boolean;
   orangeActive: boolean;
   airtelActive: boolean;
+  exchangeRate: number; // Taux de change: 1 USD = X Francs Congolais (CDF / FC). Défaut: 2850
 }
 
 export interface NotificationItem {

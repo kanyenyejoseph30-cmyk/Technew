@@ -7,6 +7,7 @@ interface ProductCatalogProps {
   products: Product[];
   selectedCategory: ProductCategory;
   searchQuery: string;
+  exchangeRate?: number;
   onOpenDetail: (product: Product) => void;
   onQuickAdd: (product: Product) => void;
 }
@@ -15,6 +16,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   products,
   selectedCategory,
   searchQuery,
+  exchangeRate = 2850,
   onOpenDetail,
   onQuickAdd
 }) => {
@@ -115,6 +117,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
             <ProductCard
               key={product.id}
               product={product}
+              exchangeRate={exchangeRate}
               onOpenDetail={onOpenDetail}
               onQuickAdd={onQuickAdd}
             />
