@@ -1,0 +1,10 @@
+{
+  "name": "Blanche Élégance",
+  "description": "Boutique de vêtements haut de gamme avec gestion de stock en temps réel, eMoney (M-Pesa, Orange Money, Airtel Money), suivi de colis par QR Code, espaces Client, Livreur Express et Gérant (accès 0991018186).",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
