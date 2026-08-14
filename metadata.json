@@ -1,6 +1,6 @@
 {
   "name": "Blanche Élégance",
-  "description": "Boutique de haute couture avec double affichage des prix (USD et Franc Congolais CDF), gestion de stock, eMoney (M-Pesa, Orange Money, Airtel Money), suivi par QR Code et menu Connexions sécurisé (Client, Livreur Express, Gérant 0991018186).",
+  "description": "Application Haute Couture native PWA connectée à une base de données cloud Firestore temps réel : synchronisation des articles, des commandes et des paiements eMoney (M-Pesa, Orange Money, Airtel Money), suivi colis par QR Code et double affichage monétaire USD / Franc Congolais (CDF).",
   "requestFramePermissions": [
     "camera"
   ],

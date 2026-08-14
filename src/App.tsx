@@ -11,10 +11,17 @@ import {
   saveStoredNotifications, 
   getStoredAnalytics 
 } from './utils/storage';
+import { 
+  seedInitialFirestoreData, 
+  subscribeToProducts, 
+  subscribeToOrders, 
+  subscribeToEMoneyConfig 
+} from './lib/firebase';
 import { createOrderNotification, requestBrowserNotificationPermission } from './utils/notifications';
 
 // Components
 import { Header } from './components/Header';
+import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { HeroBanner } from './components/HeroBanner';
 import { ProductCatalog } from './components/ProductCatalog';
 import { ProductDetailModal } from './components/ProductDetailModal';
@@ -62,22 +69,71 @@ export default function App() {
   const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
 
-  // Initial load
+  // Initial load & Firebase real-time subscription
   useEffect(() => {
-    async function loadData() {
-      const prods = await getStoredProducts();
-      setProducts(prods);
+    let unsubscribeProducts: (() => void) | undefined;
+    let unsubscribeOrders: (() => void) | undefined;
+    let unsubscribeConfig: (() => void) | undefined;
 
-      const ords = await getStoredOrders();
-      setOrders(ords);
+    async function initializeAppEngine() {
+      // 1. First hydrate instantly from local storage for zero latency
+      const localProds = await getStoredProducts();
+      setProducts(localProds);
+
+      const localOrds = await getStoredOrders();
+      setOrders(localOrds);
 
       const notifs = getStoredNotifications();
       setNotifications(notifs);
 
-      // Request Web Push permission on first turn
+      // 2. Request notification permissions
       requestBrowserNotificationPermission();
+
+      // 3. Seed initial Firestore database if needed
+      await seedInitialFirestoreData();
+
+      // 4. Subscribe to Real-Time Cloud Firestore Updates
+      unsubscribeProducts = subscribeToProducts((cloudProds) => {
+        if (cloudProds && cloudProds.length > 0) {
+          setProducts(cloudProds);
+          try {
+            localStorage.setItem('blanche_elegance_products_v1', JSON.stringify(cloudProds));
+          } catch (e) {
+            console.warn(e);
+          }
+        }
+      });
+
+      unsubscribeOrders = subscribeToOrders((cloudOrds) => {
+        if (cloudOrds && cloudOrds.length > 0) {
+          setOrders(cloudOrds);
+          try {
+            localStorage.setItem('blanche_elegance_orders_v1', JSON.stringify(cloudOrds));
+          } catch (e) {
+            console.warn(e);
+          }
+        }
+      });
+
+      unsubscribeConfig = subscribeToEMoneyConfig((cloudCfg) => {
+        if (cloudCfg) {
+          setEmoneyConfig(cloudCfg);
+          try {
+            localStorage.setItem('blanche_elegance_emoney_v1', JSON.stringify(cloudCfg));
+          } catch (e) {
+            console.warn(e);
+          }
+        }
+      });
     }
-    loadData();
+
+    initializeAppEngine();
+
+    return () => {
+      if (unsubscribeProducts) unsubscribeProducts();
+      if (unsubscribeOrders) unsubscribeOrders();
+      if (unsubscribeConfig) unsubscribeConfig();
+    };
   }, []);
 
   // Save Cart
@@ -219,6 +275,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 flex flex-col justify-between font-sans antialiased selection:bg-amber-400 selection:text-stone-950">
       
+      {/* 0. Native App Installation Banner */}
+      <PwaInstallBanner />
+
       {/* 1. Header Navigation Bar */}
       <Header
         currentTab={currentTab}

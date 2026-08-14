@@ -1,6 +1,13 @@
 import { Product, Order, EMoneyConfig, NotificationItem, DeliveryRouteAnalytic } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_EMONEY_CONFIG, INITIAL_SAMPLE_ORDERS, INITIAL_ANALYTICS } from '../data/initialData';
 import { generateQrCodeUrl, buildOrderQrPayload } from './qrHelper';
+import { 
+  saveAllProductsToFirestore, 
+  saveProductToFirestore, 
+  saveOrderToFirestore, 
+  updateOrderInFirestore,
+  saveEMoneyConfigToFirestore
+} from '../lib/firebase';
 
 const STORAGE_KEYS = {
   PRODUCTS: 'blanche_elegance_products_v1',
@@ -25,6 +32,8 @@ export async function getStoredProducts(): Promise<Product[]> {
 export function saveStoredProducts(products: Product[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+    // Persist to Cloud Firestore database in background
+    saveAllProductsToFirestore(products).catch(err => console.warn('Cloud sync error products:', err));
   } catch (e) {
     console.error('Storage write error', e);
   }
@@ -61,6 +70,10 @@ export async function getStoredOrders(): Promise<Order[]> {
 export function saveStoredOrders(orders: Order[]): void {
   try {
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+    // Also mirror to Cloud Firestore database
+    for (const ord of orders) {
+      saveOrderToFirestore(ord).catch(err => console.warn('Cloud sync error order:', err));
+    }
   } catch (e) {
     console.error('Storage write error', e);
   }
@@ -86,6 +99,8 @@ export function getStoredEMoneyConfig(): EMoneyConfig {
 export function saveStoredEMoneyConfig(config: EMoneyConfig): void {
   try {
     localStorage.setItem(STORAGE_KEYS.EMONEY, JSON.stringify(config));
+    // Persist to Cloud Firestore database
+    saveEMoneyConfigToFirestore(config).catch(err => console.warn('Cloud sync error config:', err));
   } catch (e) {
     console.error('Storage write error', e);
   }

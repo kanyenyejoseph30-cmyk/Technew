@@ -145,6 +145,8 @@ export const INITIAL_EMONEY_CONFIG: EMoneyConfig = {
   exchangeRate: 2850
 };
 
+export const DEFAULT_EMONEY_CONFIG = INITIAL_EMONEY_CONFIG;
+
 export const INITIAL_ANALYTICS: DeliveryRouteAnalytic[] = [
   { zone: 'Kinshasa - Gombe / Centre-Ville', totalDeliveries: 142, avgDeliveryTimeMinutes: 28, satisfactionRate: 98.5, recommendedDriver: 'Jean-Luc Express' },
   { zone: 'Kinshasa - Ngaliema / Mont-Fleury', totalDeliveries: 98, avgDeliveryTimeMinutes: 35, satisfactionRate: 97.2, recommendedDriver: 'Patrick M-Express' },

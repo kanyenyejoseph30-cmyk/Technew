@@ -1,0 +1,36 @@
+{
+  "name": "Blanche Élégance - Haute Couture & Prêt-à-Porter",
+  "short_name": "Blanche Élégance",
+  "description": "Boutique officielle Blanche Élégance : Haute Couture, commandes en ligne, paiement eMoney sécurisé et suivi de livraison par QR Code.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0a09",
+  "theme_color": "#d97706",
+  "orientation": "portrait-primary",
+  "categories": ["shopping", "lifestyle", "business"],
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Catalogue & Boutique",
+      "url": "/?tab=catalogue",
+      "description": "Parcourir les collections de mode"
+    },
+    {
+      "name": "Suivi de Commande",
+      "url": "/?tab=suivi",
+      "description": "Suivre votre colis et QR Code"
+    },
+    {
+      "name": "Espace Client",
+      "url": "/?tab=client",
+      "description": "Vos reçus et commandes"
+    }
+  ]
+}
